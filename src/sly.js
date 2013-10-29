@@ -1944,7 +1944,7 @@
 
 		// Global support indicators
 		transform = testProp('transform');
-		gpuAcceleration = testProp('perspective') ? 'translateZ(0) ' : '';
+		gpuAcceleration = /*testProp('perspective') ? 'translateZ(0) ' : */''; //Causes visual artifacts on Chrome/FFox
 	}());
 
 	// Expose class globally
