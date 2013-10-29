@@ -1695,7 +1695,7 @@
 				// Reset SLIDEE and handle positions
 				$slidee.add($handle).css(transform || (o.horizontal ? 'left' : 'top'), transform ? 'none' : 0);
 				// Remove the instance from element data storage
-				$.removeData(frame, namespace);
+				$.removeData($frame, namespace);
 			}
 
 			// Reset initialized status and return the instance
