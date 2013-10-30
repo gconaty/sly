@@ -179,7 +179,15 @@
 				$items.each(function (i, element) {
 					// Item
 					var $item = $(element);
-					var itemSize = $item[0].getBoundingClientRect()[o.horizontal ? 'width' : 'height'];
+          var rect = $item[0].getBoundingClientRect();
+          if (typeof rect.width !== 'number') {
+            //IE<=8 does not have width
+            rect = {
+              width: rect.right - rect.left,
+              height: rect.bottom - rect.top
+            };
+          }
+          var itemSize = rect[o.horizontal ? 'width' : 'height'];
 					var itemMarginStart = getPx($item, o.horizontal ? 'marginLeft' : 'marginTop');
 					var itemMarginEnd = getPx($item, o.horizontal ? 'marginRight' : 'marginBottom');
 					var itemSizeFull = itemSize + itemMarginStart + itemMarginEnd;
