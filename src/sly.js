@@ -19,6 +19,7 @@
 	var dragTouchEvents = 'touchmove.' + namespace + ' touchend.' + namespace;
 	var clickEvent = 'click.' + namespace;
 	var mouseDownEvent = 'mousedown.' + namespace;
+	var interactiveElements = ['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'];
 	var tmpArray = [];
 	var time;
 
@@ -278,14 +279,11 @@
 					$.each(items, function (i, item) {
 						if (forceCenteredNav) {
 							pages.push(item.center);
-						} else if (item.start + item.size > tempPagePos && tempPagePos < pos.end) {
+						} else if (item.start + item.size > tempPagePos && tempPagePos <= pos.end) {
 							tempPagePos = item.start;
 							pages.push(tempPagePos);
-							if (tempPagePos >= pos.end) {
-								return;
-							}
 							tempPagePos += frameSize;
-							if (tempPagePos > pos.end) {
+							if (tempPagePos > pos.end && tempPagePos < pos.end + frameSize) {
 								pages.push(pos.end);
 							}
 						}
@@ -1330,8 +1328,8 @@
 		 * @return {Void}
 		 */
 		function dragInit(event) {
-			// Ignore when already in progress
-			if (dragging.init) {
+			// Ignore when already in progress, or interactive element
+			if (dragging.init || isInteractive(event.target)) {
 				return;
 			}
 
@@ -1462,6 +1460,15 @@
 			}
 
 			dragging.init = 0;
+		}
+
+		/**
+		 * Check whether element is interactive.
+		 *
+		 * @return {Boolean}
+		 */
+		function isInteractive(element) {
+			return ~$.inArray(element.nodeName, interactiveElements) || $(element).is(o.interactive);
 		}
 
 		/**
@@ -1603,8 +1610,13 @@
 		 *
 		 * @return {Void}
 		 */
-		function activateHandler() {
+		function activateHandler(event) {
 			/*jshint validthis:true */
+			// Ignore clicks on interactive elements.
+			if (isInteractive(this)) {
+				event.stopPropagation();
+				return;
+			}
 			// Accept only events from direct SLIDEE children.
 			if (this.parentNode === $slidee[0]) {
 				self.activate(this);
@@ -2010,6 +2022,7 @@
 		releaseSwing:  0,    // Ease out on dragging swing release.
 		swingSpeed:    0.2,  // Swing synchronization speed, where: 1 = instant, 0 = infinite.
 		elasticBounds: 0,    // Stretch SLIDEE position limits when dragging past FRAME boundaries.
+		interactive:   null, // Selector for special interactive elements.
 
 		// Scrollbar
 		scrollBar:     null, // Selector or DOM element for scrollbar container.
