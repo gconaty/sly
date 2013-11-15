@@ -1,5 +1,5 @@
 /*!
- * sly 1.2.1 - 12th Nov 2013
+ * sly 1.2.1 - 14th Nov 2013
  * https://github.com/Darsain/sly
  *
  * Licensed under the MIT license.
@@ -29,6 +29,12 @@
 	var interactiveElements = ['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'];
 	var tmpArray = [];
 	var time;
+  
+  var isIE = /msie/.test(navigator.userAgent.toLowerCase());
+  var isIE8 = isIE && document.documentMode == 8;
+  var isIE9 = isIE && document.documentMode == 9;
+  var isIE10 = isIE && document.documentMode == 10;
+  var isIE11 = !(window.ActiveXObject) && "ActiveXObject" in window && document.documentMode == 11;
 
 	/**
 	 * Sly.
@@ -179,6 +185,7 @@
 				var ignoredMargin = 0;
 				var lastItemIndex = $items.length - 1;
 				var lastItem;
+        var fracTotal = 0;
 
 				// Reset slideeSize
 				slideeSize = 0;
@@ -187,7 +194,19 @@
 				$items.each(function (i, element) {
 					// Item
 					var $item = $(element);
-					var itemSize = $item[o.horizontal ? 'outerWidth' : 'outerHeight']();
+          var rect = element.getBoundingClientRect();
+      
+          if (isIE8) {
+            //IE<=8 does not have width
+            rect = {
+              width: rect.right - rect.left,
+              height: rect.bottom - rect.top
+            };
+          }
+          if (isIE9) {
+            fracTotal += getFractionalDimension($item, o.horizontal ? 'width' : 'height');
+          }
+          var itemSize = rect[o.horizontal ? 'width' : 'height'];
 					var itemMarginStart = getPx($item, o.horizontal ? 'marginLeft' : 'marginTop');
 					var itemMarginEnd = getPx($item, o.horizontal ? 'marginRight' : 'marginBottom');
 					var itemSizeFull = itemSize + itemMarginStart + itemMarginEnd;
@@ -230,7 +249,19 @@
 				});
 
 				// Resize SLIDEE to fit all items
-				$slidee[0].style[o.horizontal ? 'width' : 'height'] = (borderBox ? slideeSize: slideeSize - paddingStart - paddingEnd) + 'px';
+        var sizeToSet = (borderBox ? slideeSize: slideeSize - paddingStart - paddingEnd);
+        if (isIE8) {
+          //IE8 uses fractional but can't get it.  Just add 1 more px;
+          sizeToSet++;
+        }
+        else if (isIE9) {
+          //Add all the fractional parts and ceiling
+          sizeToSet += Math.ceil(fracTotal);
+        }
+        else if (isIE10 || isIE11) {
+          sizeToSet = sizeToSet.toFixed(1);
+        }
+				$slidee[0].style[o.horizontal ? 'width' : 'height'] = sizeToSet + 'px';
 
 				// Adjust internal SLIDEE size for last margin
 				slideeSize -= ignoredMargin;
@@ -1714,7 +1745,7 @@
 				// Reset SLIDEE and handle positions
 				$slidee.add($handle).css(transform || (o.horizontal ? 'left' : 'top'), transform ? 'none' : 0);
 				// Remove the instance from element data storage
-				$.removeData(frame, namespace);
+				$.removeData($frame, namespace);
 			}
 
 			// Reset initialized status and return the instance
@@ -1907,6 +1938,30 @@
 	function getPx($item, property) {
 		return 0 | Math.round(String($item.css(property)).replace(/[^\-0-9.]/g, ''));
 	}
+  
+  function getFractionalDimension($el, dimension) {
+    var 
+      display = $el.css('display'),
+      el = $el[0],
+      prevDisplay = el.style.display,
+      prevPosition = el.style.position,
+      index = dimension === 'width' ? 0 : 1,
+      fraction;
+    
+    if (display === 'inline') {
+      el.style.display = 'inline-block';
+    }
+    el.style.position = display.match(/table-row|table-.*-group/) ? 'absolute' : 'static';
+  
+    fraction = (parseFloat(el.currentStyle.msTransformOrigin.split(' ')[index]) * 2) % 1;
+  
+    if (display === 'inline') {
+      el.style.display = prevDisplay;
+    }
+    el.style.position = prevPosition;
+    
+    return fraction;
+  }
 
 	/**
 	 * Make sure that number is within the limits.
@@ -1963,7 +2018,7 @@
 
 		// Global support indicators
 		transform = testProp('transform');
-		gpuAcceleration = testProp('perspective') ? 'translateZ(0) ' : '';
+		gpuAcceleration = /*testProp('perspective') ? 'translateZ(0) ' : */''; //Causes visual artifacts on Chrome/FFox
 	}());
 
 	// Expose class globally
