@@ -27,7 +27,7 @@
   var isIE8 = isIE && document.documentMode == 8;
   var isIE9 = isIE && document.documentMode == 9;
   var isIE10 = isIE && document.documentMode == 10;
-  var isIE11 = isIE && document.documentMode == 11;
+  var isIE11 = !(window.ActiveXObject) && "ActiveXObject" in window && document.documentMode == 11;
 
 	/**
 	 * Sly.
