@@ -27,6 +27,7 @@
   var isIE8 = isIE && document.documentMode == 8;
   var isIE9 = isIE && document.documentMode == 9;
   var isIE10 = isIE && document.documentMode == 10;
+  var isIE11 = isIE && document.documentMode == 11;
 
 	/**
 	 * Sly.
@@ -250,7 +251,7 @@
           //Add all the fractional parts and ceiling
           sizeToSet += Math.ceil(fracTotal);
         }
-        else if (isIE10) {
+        else if (isIE10 || isIE11) {
           sizeToSet = sizeToSet.toFixed(1);
         }
 				$slidee[0].style[o.horizontal ? 'width' : 'height'] = sizeToSet + 'px';
