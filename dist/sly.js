@@ -1,5 +1,5 @@
 /*!
- * sly 1.2.1 - 14th Nov 2013
+ * sly 1.2.1 - 13th Feb 2014
  * https://github.com/Darsain/sly
  *
  * Licensed under the MIT license.
@@ -178,8 +178,8 @@
 				items.length = 0;
 
 				// Needed variables
-				var paddingStart = getPx($slidee, o.horizontal ? 'paddingLeft' : 'paddingTop');
-				var paddingEnd = getPx($slidee, o.horizontal ? 'paddingRight' : 'paddingBottom');
+				var paddingStart = getPx($slidee, o.horizontal ? 'paddingLeft' : 'paddingTop', true);
+				var paddingEnd = getPx($slidee, o.horizontal ? 'paddingRight' : 'paddingBottom', true);
 				var borderBox = $($items).css('boxSizing') === 'border-box';
 				var areFloated = $items.css('float') !== 'none';
 				var ignoredMargin = 0;
@@ -207,8 +207,8 @@
             fracTotal += getFractionalDimension($item, o.horizontal ? 'width' : 'height');
           }
           var itemSize = rect[o.horizontal ? 'width' : 'height'];
-					var itemMarginStart = getPx($item, o.horizontal ? 'marginLeft' : 'marginTop');
-					var itemMarginEnd = getPx($item, o.horizontal ? 'marginRight' : 'marginBottom');
+					var itemMarginStart = getPx($item, o.horizontal ? 'marginLeft' : 'marginTop', true);
+					var itemMarginEnd = getPx($item, o.horizontal ? 'marginRight' : 'marginBottom', true);
 					var itemSizeFull = itemSize + itemMarginStart + itemMarginEnd;
 					var singleSpaced = !itemMarginStart || !itemMarginEnd;
 					var item = {};
@@ -1935,8 +1935,14 @@
 	 *
 	 * @return {Int}
 	 */
-	function getPx($item, property) {
-		return 0 | Math.round(String($item.css(property)).replace(/[^\-0-9.]/g, ''));
+	function getPx($item, property, noround) {
+    var val = String($item.css(property)).replace(/[^\-0-9.]/g, '');
+    if (noround) {
+      return val ? parseFloat(val) : 0;
+    }
+    else {
+      return 0 | Math.round(val);
+    }
 	}
   
   function getFractionalDimension($el, dimension) {
